@@ -1,12 +1,42 @@
 const express = require('express');
+const path = require("path");
+const { open } = require("sqlite");
+const sqlite3 = require("sqlite3");
+const dbPath = path.join(__dirname, "cricketTeam.db");
+
+let db = null;
 const app = express();
+app.use(express.json());
 
-app.get("/",(request,response) =>{
+const initializeDbAndServer = async () => {
+   try {
+      db = await open({
+         filename: dbPath,
+         driver: sqlite3.Database,
 
-   response.send("Hello World!")
+      });
+      app.listen(3000, () => {
+         console.log("Server Running at http://localhost:3000/");
+
+      });
+   } catch (e) {
+      console.log(`DB Error: ${e.message}`);
+      process.exit(1);
+   }
+};
+initializeDbAndServer();
+
+
+//Get All
+app.get("/players/",async (request, response) => {
+   const getPlayersQuery = `SELECT * FROM cricket_team;`;
+   const playersArray = await db.all(getPlayersQuery);
+   response.send(playersArray);
 
 });
-app.listen(3000);
+
+
+
 
 module.exports = app;
 
